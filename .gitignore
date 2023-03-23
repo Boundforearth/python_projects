@@ -2,6 +2,7 @@
 .vscode/
 keylogger/keylogger2.py
 keylogger/test.py
+keylogger/.env
 __pycache__/
 domain_info
 url_list
